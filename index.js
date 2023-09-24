@@ -1,12 +1,7 @@
-const readline = require('readline');
 const fs = require('fs');
 const { createSVG, setSVG, draw } = require('svg-builder');
-const { SequelizeScopeError } = require('sequelize');
+const inquirer = require('inquirer');
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
 
 function createLogo(userText, textColor, selectedShape, shapeColor) {
     const width = 300;
@@ -31,15 +26,36 @@ function createLogo(userText, textColor, selectedShape, shapeColor) {
     console.log('Generated logo.svg');
 }
 
-rl.question('Enter up to 3 characters: ', (userText) => {
-    rl.question('Enter text color (keyword or hex code): ', (textColor) => {
-        rl.question('Select a shape (circle, triangle, square): ',(selectedShape) => {
-        rl.question('Enter shape color (keyword or hex code): ', (shapeColor) => {
-
-            createLogo(userText, textColor, selectedShape, shapeColor);
-
-            rl.close();
-        });
-        });
+inquirer
+    .createPromptModule([
+        {
+            type: 'input',
+            name: 'userText',
+            message: 'Enter up to 3 characters: ',
+            validate: (value) => {
+                return value.length <= 3 ? true : 'Text must be up to 3 characters long.';
+            },
+        },
+        {
+            type: 'input',
+            name: 'textColor',
+            message: 'Enter text color (keyword or hex code):',
+        },
+        {
+            type: 'list',
+            name: 'selectedShape',
+            message: 'Select a shape',
+            choices: ['circle', 'triangle', 'square'],
+        },
+        {
+            type: 'input',
+            name: 'shapeColor',
+            message: 'Enter shape color (keywork or hex code):',
+        },
+    ])
+    .then((answers) => {
+        createLogo(answers.userText, answers.textColor, answers.selectedShape, answers.shapeColor);
+    })
+    .catch((error) => {
+        console.error(error);
     });
-});
