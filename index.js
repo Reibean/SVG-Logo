@@ -1,33 +1,8 @@
 const fs = require('fs');
-const { createSVG, setSVG, draw } = require('svg-builder');
 const inquirer = require('inquirer');
 
-
-function createLogo(userText, textColor, selectedShape, shapeColor) {
-    const width = 300;
-    const height = 200;
-
-    const svg = createSVG();
-
-    if (selectedShape === 'circle') {
-        draw(svg.circle().radius(50).center(width / 2, height / 2).fill(shapeColor));
-    } else if (selectedShape === 'triangle') {
-        draw(svg.polygon([width / 2, 20], [width - 20, height - 20], [20, height - 20]).fill(shapeColor));
-    } else if (selectedShape === 'square') {
-        draw(svg.rect(width, height).fill(shapeColor));
-    }
-
-    draw(svg.text(userText).fill(textColor).font({ size: 40 }).move(width / 2 - 50, height / 2 - 20));
-
-    const svgString = setSVG(svg);
-
-    fs.writeFileSync('logo.svg', svg.svg());
-
-    console.log('Generated logo.svg');
-}
-
 inquirer
-    .createPromptModule([
+    .prompt([
         {
             type: 'input',
             name: 'userText',
@@ -54,8 +29,30 @@ inquirer
         },
     ])
     .then((answers) => {
-        createLogo(answers.userText, answers.textColor, answers.selectedShape, answers.shapeColor);
-    })
+        let shapeElement;
+        switch (answers.selectedShape) {
+            case 'circle':
+                shapeElement = `<circle cx="150" cy="100" r="80" fill="${answers.shapeColor}" />`;
+                break;
+            case 'triangle':
+                shapeElement = `<polygon points="150,20 280,180 20,180" fill="${answers.shapeColor}" />`;
+                `<text x="150" y="140" font-size="24" text-anchor="middle" fill="white"></text>`
+                break;
+            case 'square':
+                shapeElement = `<rect width="150" height="150" x="75" y="25" fill="${answers.shapeColor}" />`;
+                break;
+        }
+        
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">
+        ${shapeElement}
+        <text x="50%" y="50%" font-size="72" fill="${answers.textColor}" text-anchor="middle">${answers.userText}</text>
+      </svg>`;
+        
+        fs.writeFileSync('logo.svg', svg);
+
+        console.log('Generated logo.svg');
+        })
+
     .catch((error) => {
         console.error(error);
     });
