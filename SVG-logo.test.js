@@ -1,4 +1,4 @@
-const fs = reuire('fs');
+const fs = require('fs');
 const path = require('path');
 
 describe('SVG Logo', () => {
